@@ -1,0 +1,31 @@
+<html>
+<head>
+</head>
+<body>
+<div id='file_container'>
+<h1> My file list </h1>
+<input type='text' id='addFolder' placeholder='Enter Folder Name'>
+<input type='text' id='addFile' placeholder='Enter File Name'>
+<button type="button" id='createFileTemp'>Add Temporary</button>
+<button type="button" id='createFilePers'>Add Persistent</button>
+
+<ul id='fileTrayTemporary'>
+
+</ul>
+<button type="button" id='deleteTemp'>Delete Temporary</button><p id='temporaryData'></p>
+
+<ul id='fileTrayPersistent'>
+<li>a</li>
+<li>b</li>
+<li>c</li>
+</ul>
+<button type="button" id='deletePers'>Delete Persistent</button><p id='persistentData'></p>
+
+</div>
+<input type='text' id='fileSize' placeholder='Request Quota(100 MB default.)'>
+<button type="button" id='deleteAll'>Delete All</button>
+
+<script src='/fileSystemAPIs/js/filesystem.js' type='text/javascript'></script>
+<script src='/fileSystemAPIs/js/interactions.js' type='text/javascript'></script>
+</body>
+</html>
