@@ -3,7 +3,7 @@ var localFileSystem = {
   fileSystem : null,
 	requestQuotaForFileSystem : function(fileSize,fileType,callback){
   	  var self=this;
-       self.fileSystem = null;
+      self.fileSystem = null;
       window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
       if(fileType==='PERSISTENT')
       {
@@ -13,8 +13,8 @@ var localFileSystem = {
           }, function(e) {
         console.log('Error', e);
         });
-        fs=filesystem;
-        callback(fs);
+        self.fileSystem=filesystem;
+        callback(self.fileSystem);
         },errorHandler);
       }
       else
@@ -25,8 +25,8 @@ var localFileSystem = {
           }, function(e) {
               console.log('Error', e);
           });
-       self.fileSystem=filesystem;
-       callback(fs);
+        self.fileSystem=filesystem;
+        callback(self.fileSystem);
         },errorHandler);
       }
     },
@@ -46,41 +46,65 @@ var localFileSystem = {
     countFiles : function(filePath,callback){
     	var files=[];
     	fs.root.getDirectory(filePath, {}, function(dirEntry){
-          var dirReaderPlan = dirEntry.createReader();
-          dirReaderPlan.readEntries(function(entries) {
-          for(var i = 0; i < entries.length; i++)
-          {
-            var entryPl = entries[i];
-            if (entryPl.isDirectory){
-            }
-            else if (entryPl.isFile)
-            {
-              files.push(entryPl.name);
-            }
+        var dirReaderPlan = dirEntry.createReader();
+        dirReaderPlan.readEntries(function(entries) {
+        for(var i = 0; i < entries.length; i++)
+        {
+          var entryPl = entries[i];
+          if (entryPl.isDirectory){
           }
-          callback(files,files.length);
+          else if (entryPl.isFile)
+          {
+            files.push(entryPl.name);
+          }
+        }
+        callback(files,files.length);
         }, errorHandler);
       }, errorHandler);	
     },
 
-    saveFiles : function(data,filePath,callback){
-    	window.requestFileSystem(window.TEMPORARY, 20*1024*1024, function (filesystem) {
+    saveFilesType : function(type,data,filePath,callback){
+      var self=this;
+      if(type==='temporary')
+      {
+        window.requestFileSystem(window.TEMPORARY, 20*1024*1024, function (filesystem) {
         fs = filesystem;
-        fs.root.getFile( filePath, {create: true,exclusive: true}, function(fileEntry) 
-        {
-	      fileEntry.createWriter(function(fileWriter) {
-	      var status=false;
+        self.saveFiles(fs,data,filePath,function(status){
+          if(status){
+            callback(status);
+            }
+          });
+        }, errorHandler);
+      }
+      else
+      {
+        window.requestFileSystem(window.PERSISTENT, 20*1024*1024, function (filesystem) {
+        fs = filesystem;
+        self.saveFiles(fs,data,filePath,function(status){
+          if(status){
+            callback(status);
+            }
+          });
+        }, errorHandler);
+      }
+    },
 
-	      fileWriter.onerror = function(e) {
-	        console.log('Write failed: ' +e.toString());
-	      };
-	      var blob = new Blob([JSON.stringify(data)], {type: 'text/plain'});
-	      fileWriter.write(blob);
-	      status=true;
-	      callback(status); 
-	     }, errorHandler);
+    saveFiles : function(fs,data,filePath,callback){
+      console.log(filePath);
+      fs.root.getFile( filePath, {create: true,exclusive: true}, function(fileEntry) 
+        {
+        fileEntry.createWriter(function(fileWriter) {
+        var status=false;
+
+        fileWriter.onerror = function(e) {
+          console.log('Write failed: ' +e.toString());
+        };
+        var blob = new Blob([JSON.stringify(data)], {type: 'text/plain'});
+        fileWriter.write(blob);
+        status=true;
+        callback(status); 
        }, errorHandler);
-      }, errorHandler);
+       }, errorHandler);
     },
 
     readFiles : function(filePath,callback){
